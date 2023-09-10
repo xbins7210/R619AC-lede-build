@@ -109,7 +109,6 @@ jobs:
     - name: Update feeds
       run: |
         cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
-        ./scripts/feeds update istore && ./scripts/feeds install -d y -p istore luci-app-store
       
 
     - name: File Patch After
@@ -212,6 +211,7 @@ jobs:
         CONFIG_PACKAGE_luci-app-vlmcsd=y
         CONFIG_PACKAGE_luci-app-adguardhome=y
         CONFIG_PACKAGE_luci-app-sqm=y
+        CONFIG_PACKAGE_luci-app-store=y
         EOF
 
         # LuCI主题:
