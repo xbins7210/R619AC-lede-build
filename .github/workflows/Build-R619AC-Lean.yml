@@ -77,14 +77,17 @@ jobs:
         cd openwrt/package
         mkdir openwrt-packages
         cd openwrt-packages
+        echo >> feeds.conf.default
+        echo 'src-git istore https://github.com/linkease/istore;main' >> feeds.conf.default
         git clone https://github.com/zzsj0928/luci-app-pushbot
         git clone -b lede https://github.com/pymumu/luci-app-smartdns
         git clone https://github.com/gngpp/luci-theme-design
-        git clone --depth 1 https://github.com/jerrykuku/luci-app-argon-config
+        git clone --depth 1 https://github.com/jerrykuku/luci-app-argon-config1
         svn export https://github.com/kiddin9/openwrt-packages/trunk/luci-app-diskman
         svn export https://github.com/immortalwrt/packages/trunk/net/smartdns
         svn export https://github.com/sirpdboy/sirpdboy-package/trunk/luci-app-adguardhome
-        echo 'src-git istore https://github.com/linkease/istore;main' >> feeds.conf.default
+
+
 
     - name: File Patch Before
       run: |
@@ -95,6 +98,7 @@ jobs:
         sed -i "/firewall\.user/d" package/lean/default-settings/files/zzz-default-settings
         cd ./package/openwrt-packages
         DIR=$PWD
+        
         cd $DIR/luci-app-adguardhome/root/usr && mkdir -p ./bin/AdGuardHome && cd ./bin/AdGuardHome && pwd
         ADG_VER=$(curl -sfL https://api.github.com/repos/AdguardTeam/AdGuardHome/releases 2>/dev/null | grep 'tag_name' | egrep -o "v[0-9].+[0-9.]" | awk 'NR==1')
         curl -sfL -o /tmp/AdGuardHome_linux_armv7.tar.gz https://github.com/AdguardTeam/AdGuardHome/releases/download/${ADG_VER}/AdGuardHome_linux_armv7.tar.gz
@@ -107,9 +111,7 @@ jobs:
         
 
     - name: Update feeds
-      run: |
-        cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
-      
+      run: cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
 
     - name: File Patch After
       run: |
@@ -190,12 +192,16 @@ jobs:
 
         # LuCI插件选择:
         cat >> .config <<EOF
+        CONFIG_PACKAGE_luci-app-alist=y
+        CONFIG_PACKAGE_luci-app-passwall=y
         CONFIG_PACKAGE_luci-app-diskman=y
         CONFIG_PACKAGE_luci-app-autoreboot=y
         CONFIG_PACKAGE_luci-app-ddns=y
         CONFIG_PACKAGE_luci-app-filetransfer=y
         CONFIG_PACKAGE_luci-app-nlbwmon=y
         CONFIG_PACKAGE_luci-app-firewall=y
+        CONFIG_PACKAGE_luci-app-ssr-plus=y
+        CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Xray=y
         CONFIG_PACKAGE_luci-app-serverchan=y
         CONFIG_PACKAGE_luci-app-pptp-server=y
         CONFIG_PACKAGE_luci-app-smartdns=y
@@ -209,9 +215,10 @@ jobs:
         CONFIG_PACKAGE_luci-app-upnp=y
         CONFIG_PACKAGE_luci-app-vsftpd=y
         CONFIG_PACKAGE_luci-app-vlmcsd=y
+        CONFIG_PACKAGE_luci-app-zerotier=y
         CONFIG_PACKAGE_luci-app-adguardhome=y
+        CONFIG_PACKAGE_luci-app-openclash=y
         CONFIG_PACKAGE_luci-app-sqm=y
-        CONFIG_PACKAGE_luci-app-store=y
         EOF
 
         # LuCI主题:
@@ -322,7 +329,7 @@ jobs:
         artifacts: ${{ env.FIRMWARE }}/*
         body: |
           - 版本号：${{ env.VER }}
-          - 默认IP：192.168.1.1
+          - 默认IP：192.168.10.1
           - 默认密码：password
           - 当前使用版本:【编译前的最后一次[➦主源码](https://github.com/coolsnowwolf/lede)更新记录】
           - 下载后请仔细校验MD5，如不正确请重新下载
